@@ -1,0 +1,140 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Study Hub Pro+</title><style>
+body { font-family: Arial; text-align: center; background: #f4f4f4; margin:0; }
+h1 { background: #4CAF50; color: white; padding: 15px; margin:0; }
+button {
+  padding: 10px 20px;
+  margin: 10px;
+  border: none;
+  background: #333;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+button:hover { background: #555; }
+.container { margin-top: 20px; }
+.back { background: red; }
+.search { padding:10px; width:80%; margin:10px; }
+.dark { background:#121212; color:white; }
+.dark button { background:#444; }
+</style></head>
+<body><h1>📚 Study Hub Pro+</h1>
+<button onclick="toggleDarkMode()">🌙 Dark Mode</button>
+<br>
+<input type="text" id="search" class="search" placeholder="Search chapters..." onkeyup="searchContent()"><div class="container" id="main"></div><script>
+
+const data = {
+  "Class 9": {
+    "Maths": {
+      "Chapter 1": "a² - b² = (a-b)(a+b)",
+      "Chapter 2": "(a+b)² = a² + b² + 2ab",
+      "Chapter 3": "(a-b)² = a² + b² - 2ab"
+    },
+    "Science": {
+      "Physics": {
+        "Motion": "v = u + at, s = ut + 1/2at²",
+        "Force": "F = ma"
+      },
+      "Biology": {
+        "Cell": "Cell is basic unit of life",
+        "Tissues": "Group of similar cells"
+      }
+    },
+    "SST": {
+      "History": {
+        "French Revolution": "Started in 1789"
+      }
+    },
+    "IT": {
+      "Basics": "Computer is electronic machine"
+    }
+  }
+};
+
+let historyStack = [];
+
+function showOptions(obj, title="Select") {
+  const main = document.getElementById("main");
+  main.innerHTML = `<h2>${title}</h2>`;
+
+  if (historyStack.length > 0) {
+    let backBtn = document.createElement("button");
+    backBtn.innerText = "⬅ Back";
+    backBtn.classList.add("back");
+    backBtn.onclick = () => {
+      const prev = historyStack.pop();
+      showOptions(prev.obj, prev.title);
+    };
+    main.appendChild(backBtn);
+  }
+
+  for (let key in obj) {
+    let btn = document.createElement("button");
+    btn.innerText = key;
+
+    btn.onclick = () => {
+      historyStack.push({ obj: obj, title: title });
+
+      if (typeof obj[key] === "string") {
+        main.innerHTML = `
+          <h2>${key}</h2>
+          <p>${obj[key]}</p>
+          <button onclick="downloadPDF('${key}','${obj[key]}')">📄 Download PDF</button>
+          <button class="back" onclick="goBack()">⬅ Back</button>
+        `;
+      } else {
+        showOptions(obj[key], key);
+      }
+    };
+
+    main.appendChild(btn);
+  }
+}
+
+function goBack() {
+  const prev = historyStack.pop();
+  showOptions(prev.obj, prev.title);
+}
+
+function toggleDarkMode() {
+  document.body.classList.toggle("dark");
+}
+
+function searchContent() {
+  const input = document.getElementById("search").value.toLowerCase();
+  const main = document.getElementById("main");
+  let results = "<h2>Search Results</h2>";
+
+  function search(obj) {
+    for (let key in obj) {
+      if (typeof obj[key] === "string") {
+        if (key.toLowerCase().includes(input)) {
+          results += `<p><b>${key}</b>: ${obj[key]}</p>`;
+        }
+      } else {
+        search(obj[key]);
+      }
+    }
+  }
+
+  search(data);
+  main.innerHTML = results;
+}
+
+function downloadPDF(title, content) {
+  const element = document.createElement('a');
+  const file = new Blob([title + "\n\n" + content], {type: 'text/plain'});
+  element.href = URL.createObjectURL(file);
+  element.download = title + ".txt";
+  document.body.appendChild(element);
+  element.click();
+}
+
+// Start
+showOptions(data, "Choose Class");
+
+</script></body>
+  </html>
